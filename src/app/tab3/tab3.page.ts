@@ -1,6 +1,6 @@
 import { Component, ViewChild, ElementRef  } from '@angular/core';
 
-// import { Geolocation } from '@ionic-native/geolocation';
+import { Geolocation } from '@ionic-native/geolocation/ngx';
 
 declare var google: any;
 
@@ -14,61 +14,72 @@ export class Tab3Page {
   @ViewChild('map',{static:false}) mapElement: ElementRef;
   map: any;
 
-  // constructor(public geolocation: Geolocation) {}
-  constructor() {}
+  constructor(private geolocation: Geolocation) {}
+  
+  // constructor() {}
 
   // ionViewDidLoad(){
   //   this.loadMap();
   // }
 
   loadMap(){
-    console.log('loadMap');
+    console.log('loadMap 3');
 
-    let latLng = new google.maps.LatLng(-34.9290, 138.6010);
-    let mapOptions = {
-      center: latLng,
-      zoom: 15,
-      mapTypeId: google.maps.MapTypeId.ROADMAP
-    }
-    this.map = new google.maps.Map(this.mapElement.nativeElement, mapOptions);
+    // let latLng = new google.maps.LatLng(-34.9290, 138.6010);
+    // let mapOptions = {
+    //   center: latLng,
+    //   zoom: 15,
+    //   mapTypeId: google.maps.MapTypeId.ROADMAP
+    // }
+    // this.map = new google.maps.Map(this.mapElement.nativeElement, mapOptions);
+ 
+    // ------------------
 
-    // ----------------
+    this.geolocation.getCurrentPosition().then((position) => {
+        let latLng = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
 
-    // this.geolocation.getCurrentPosition().then((position) => {
+        let mapOptions = {
+          center: latLng,
+          zoom: 15,
+          mapTypeId: google.maps.MapTypeId.ROADMAP
+        }
 
-    //   let latLng = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+        this.map = new google.maps.Map(this.mapElement.nativeElement, mapOptions);
 
-    //   let mapOptions = {
-    //     center: latLng,
-    //     zoom: 15,
-    //     mapTypeId: google.maps.MapTypeId.ROADMAP
-    //   }
+        this.addMarker();
 
-    //   this.map = new google.maps.Map(this.mapElement.nativeElement, mapOptions);
-
-    // }, (err) => {
-    //   console.log(err);
-    // });
-
-    // ----------------
-
-    // this.geolocation.getCurrentPosition((position)=>{
-    //     let latLng = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
-
-    //     let mapOptions = {
-    //       center: latLng,
-    //       zoom: 15,
-    //       mapTypeId: google.maps.MapTypeId.ROADMAP
-    //     }
-
-    //     this.map = new google.maps.Map(this.mapElement.nativeElement, mapOptions);
-
-    // },(err) => {
-    //     console.log(err);
-    // });
-
+    }).catch((error) => {
+       console.log('Error getting location', error);
+     });
 
   }
+
+  addMarker(){
+
+    let marker = new google.maps.Marker({
+      map: this.map,
+      animation: google.maps.Animation.DROP,
+      position: this.map.getCenter()
+    });
+  
+    let content = "<h4>Du bist hier!</h4>";          
+  
+    this.addInfoWindow(marker, content);
+  
+  }
+
+  addInfoWindow(marker, content){
+
+    let infoWindow = new google.maps.InfoWindow({
+      content: content
+    });
+
+    google.maps.event.addListener(marker, 'click', () => {
+      infoWindow.open(this.map, marker);
+    });
+
+  }
+
 
   ionViewWillEnter() {
     console.log("ionViewWillEnter");
